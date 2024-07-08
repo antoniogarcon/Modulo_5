@@ -4,6 +4,7 @@ from db_models.Payment import Payment
 from datetime import datetime, timedelta
 from payments.Pix import Pix
 
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
