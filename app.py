@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from repository.database import db
 from db_models.Payment import Payment
 from datetime import datetime, timedelta
+from payments.Pix import Pix
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -19,7 +21,13 @@ def create_payment_pix():
 
     new_payment = Payment(value=data['value'],
                            expiration_date=expiration_date)
-    
+    #Criando o QRCODE
+    pix_obj = Pix()
+    data_payment_pix = pix_obj.create_payment()
+
+    new_payment.bank_payment_id = data_payment_pix['bank_payment_id']
+    new_payment.qr_code = data_payment_pix['qr_cide_path']
+
     db.session.add(new_payment)
     db.session.commit()
 
