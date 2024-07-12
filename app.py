@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, send_file, render_template
 from repository.database import db
-from db_models.Payment import Payment
+from db_models.payment import Payment
 from datetime import datetime, timedelta
 from payments.Pix import Pix
 from flask_socketio import SocketIO
@@ -43,6 +43,22 @@ def get_image(file_name):
 
 @app.route('/payments/pix/confirmation', methods=['POST'])
 def pix_confirmation():
+    data = request.get_json()
+
+    if 'bank_payment_id' not in data or 'value' not in data:
+        return jsonify({"error": "Invalid payment data"}), 400
+
+    payment = Payment.query.filter_by(bank_payment_id=data.get('bank_payment_id')).first()
+
+    if not payment or payment.paid:
+        return jsonify({"error": "Payment not found"}), 404
+    
+    if payment.value!= data.get('value'):
+        return jsonify({"error": "Invalid payment data"}), 400
+    
+    payment.paid = True
+    db.session.commit()
+
     return jsonify({"message": "Payment has been created successfully"})
 
 @app.route('/payments/pix/<int:payment_id>', methods=['GET'])
